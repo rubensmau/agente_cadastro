@@ -2,6 +2,11 @@
 
 A2A-compliant agent for querying Brazilian person registration data with configurable field exposure and privacy controls.
 
+**Quick Links:**
+- 🚀 [Quick Start (5 min)](QUICKSTART.md) - Get running fast!
+- 📦 [Deployment Guide](DEPLOYMENT.md) - Local & Cloud Run
+- 🧪 [Testing Guide](TESTING.md) - Test suites & examples
+
 ## Overview
 
 This agent provides search capabilities over CSV registration data using the Google ADK (Agent Development Kit) framework and A2A (Agent-to-Agent) protocol. It's designed to be easily configurable for multiple deployments with different privacy requirements.
@@ -94,16 +99,34 @@ Note: Fields can be `searchable` without being `exposed`. For example, CPF can b
 
 ## Running the Agent
 
-Start the agent server:
+### Local Development
 
+**Simple Mode (for testing):**
 ```bash
 python -m src.main
 ```
 
+**A2A-Compliant Mode:**
+```bash
+python -m src.main --mode compliant
+```
+
 The server will start on `http://0.0.0.0:8000` (default) and display:
-- Metadata endpoint: `/metadata`
+- Human UI: `/` (browser-friendly view)
+- Metadata endpoint: `/metadata` (A2A Agent Card)
 - Health check: `/health`
-- Configured exposed and searchable fields
+- Search endpoint: `/send_message`
+
+### Cloud Run Deployment
+
+Deploy to Google Cloud Run with one command:
+
+```bash
+export GCP_PROJECT_ID="your-project-id"
+./deploy.sh
+```
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed deployment instructions, monitoring, and troubleshooting
 
 ## Usage
 

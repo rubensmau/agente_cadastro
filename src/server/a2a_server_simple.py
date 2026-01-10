@@ -1,6 +1,6 @@
 """A2A server implementation using Starlette."""
 import uvicorn
-from starlette.responses import JSONResponse
+from starlette.responses import JSONResponse, HTMLResponse
 from starlette.requests import Request
 from typing import AsyncIterator
 
@@ -88,6 +88,7 @@ class RegistrationA2AServer:
         app = Starlette(
             debug=True,
             routes=[
+                Route("/", self.root_view, methods=["GET"]),
                 Route(self.config.server.metadata_endpoint, self.get_metadata, methods=["GET"]),
                 Route("/health", self.health_check, methods=["GET"]),
                 Route("/send_message", self.send_message, methods=["POST"]),
@@ -95,6 +96,158 @@ class RegistrationA2AServer:
         )
 
         return app
+
+    async def root_view(self, request: Request):
+        """Human-friendly HTML view of the agent."""
+        agent_card = self.agent.get_agent_card()
+        card_dict = agent_card.dict()
+
+        searchable_fields_html = "".join([
+            f"<li><code>{field}</code></li>"
+            for field in self.config.fields.searchable_fields
+        ])
+
+        exposed_fields_html = "".join([
+            f"<li><code>{field}</code></li>"
+            for field in self.config.fields.exposed_fields
+        ])
+
+        html_content = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>{card_dict.get('name')} - Simple Mode</title>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <style>
+                body {{
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                    line-height: 1.6;
+                    max-width: 900px;
+                    margin: 0 auto;
+                    padding: 20px;
+                    background: #f5f5f5;
+                }}
+                .container {{
+                    background: white;
+                    padding: 30px;
+                    border-radius: 10px;
+                    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                }}
+                h1 {{ color: #2c3e50; border-bottom: 3px solid #e74c3c; padding-bottom: 10px; }}
+                h2 {{ color: #34495e; margin-top: 30px; }}
+                .badge {{
+                    display: inline-block;
+                    padding: 5px 10px;
+                    background: #e74c3c;
+                    color: white;
+                    border-radius: 3px;
+                    font-size: 0.9em;
+                    margin-right: 5px;
+                }}
+                .endpoint {{
+                    background: #ecf0f1;
+                    padding: 10px;
+                    border-left: 4px solid #e74c3c;
+                    margin: 10px 0;
+                    font-family: 'Courier New', monospace;
+                }}
+                code {{
+                    background: #ecf0f1;
+                    padding: 2px 6px;
+                    border-radius: 3px;
+                    font-family: 'Courier New', monospace;
+                }}
+                .example {{
+                    background: #2c3e50;
+                    color: #ecf0f1;
+                    padding: 15px;
+                    border-radius: 5px;
+                    overflow-x: auto;
+                    margin: 10px 0;
+                }}
+                ul {{ list-style-type: none; padding-left: 0; }}
+                li {{ padding: 5px 0; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>🤖 {card_dict.get('name')}</h1>
+                <p style="font-size: 1.1em; color: #7f8c8d;">
+                    {card_dict.get('description')}
+                </p>
+                <p>
+                    <span class="badge">Version {card_dict.get('version')}</span>
+                    <span class="badge">Simple Mode</span>
+                </p>
+
+                <h2>🔍 Search Fields</h2>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div>
+                        <h3>Searchable Fields:</h3>
+                        <ul>{searchable_fields_html}</ul>
+                    </div>
+                    <div>
+                        <h3>Exposed in Results:</h3>
+                        <ul>{exposed_fields_html}</ul>
+                    </div>
+                </div>
+
+                <h2>🔌 API Endpoints</h2>
+
+                <div class="endpoint">
+                    <strong>GET</strong> <a href="/metadata">/metadata</a>
+                    <p style="margin: 5px 0 0 0; color: #7f8c8d;">
+                        Returns the Agent Card (JSON format)
+                    </p>
+                </div>
+
+                <div class="endpoint">
+                    <strong>GET</strong> <a href="/health">/health</a>
+                    <p style="margin: 5px 0 0 0; color: #7f8c8d;">
+                        Health check endpoint
+                    </p>
+                </div>
+
+                <div class="endpoint">
+                    <strong>POST</strong> /send_message
+                    <p style="margin: 5px 0 0 0; color: #7f8c8d;">
+                        Simple JSON search endpoint (no A2A wrapping)
+                    </p>
+                </div>
+
+                <h2>📝 Usage Example (Simple Mode)</h2>
+                <p>Send direct JSON requests - no A2A message wrapping needed:</p>
+
+                <div class="example">
+                    <pre>curl -X POST http://localhost:{self.config.server.port}/send_message \\
+  -H "Content-Type: application/json" \\
+  -d '{{"name": "João"}}'</pre>
+                </div>
+
+                <p><strong>Multi-field search:</strong></p>
+                <div class="example">
+                    <pre>curl -X POST http://localhost:{self.config.server.port}/send_message \\
+  -H "Content-Type: application/json" \\
+  -d '{{"surname": "Silva", "state": "SP"}}'</pre>
+                </div>
+
+                <h2>💡 Mode Comparison</h2>
+                <p>This server runs in <strong>Simple Mode</strong> for easy testing. For full A2A protocol compliance, start with:</p>
+                <div class="example">
+                    <pre>python -m src.main --mode compliant</pre>
+                </div>
+
+                <hr style="margin: 30px 0; border: none; border-top: 1px solid #ecf0f1;">
+                <p style="text-align: center; color: #7f8c8d; font-size: 0.9em;">
+                    Powered by Google ADK
+                </p>
+            </div>
+        </body>
+        </html>
+        """
+
+        return HTMLResponse(content=html_content)
 
     async def get_metadata(self, request: Request):
         """
