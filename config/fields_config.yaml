@@ -1,0 +1,32 @@
+agent:
+  name: "registration_data_agent"
+  display_name: "Registration Data Agent"
+  description: "Agent for querying Brazilian person registration data"
+  version: "1.0.0"
+
+data:
+  csv_path: "data/registrations.csv"
+
+fields:
+  # Fields that will be visible to clients in responses
+  exposed_fields:
+    - name
+    - surname
+    - city
+    - state
+    - phone
+
+  # Fields that can be used in search queries
+  # Note: cpf can be searched but won't appear in results (privacy)
+  searchable_fields:
+    - name
+    - surname
+    - cpf
+    - phone
+    - city
+    - state
+
+server:
+  host: "0.0.0.0"
+  port: 8000
+  metadata_endpoint: "/metadata"
