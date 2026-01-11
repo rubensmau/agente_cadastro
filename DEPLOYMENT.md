@@ -47,6 +47,29 @@ Edit `config/fields_config.yaml` to customize:
 - Searchable fields
 - Server port and host
 
+### Changing the Port
+
+**Method 1: Environment variable (recommended)**
+```bash
+PORT=9000 python -m src.main --mode compliant
+```
+
+**Method 2: Export environment variable**
+```bash
+export PORT=9000
+python -m src.main --mode compliant
+```
+
+**Method 3: Edit config file**
+
+Edit `config/fields_config.yaml`:
+```yaml
+server:
+  port: 9000  # Change from default 8000
+```
+
+**Priority:** The `PORT` environment variable overrides the config file setting.
+
 ---
 
 ## Google Cloud Run Deployment
@@ -55,10 +78,16 @@ Edit `config/fields_config.yaml` to customize:
 
 1. **Google Cloud Account** with billing enabled
 2. **gcloud CLI** installed: https://cloud.google.com/sdk/docs/install
-3. **Docker** installed (for local builds)
-4. **GCP Project** created
+3. **GCP Project** created
+4. **Docker** installed (for manual deployment only)
 
-### One-Command Deployment
+### Deployment Options
+
+Choose one of three deployment methods:
+
+#### Option 1: Deploy Script (Recommended)
+
+One-command deployment with full control.
 
 ```bash
 # Set your project ID
@@ -74,6 +103,42 @@ The script will:
 - Push to Google Container Registry
 - Deploy to Cloud Run
 - Output the service URL
+
+#### Option 2: Automated CI/CD with agent-starter-pack
+
+Setup automated deployment that triggers on git push:
+
+```bash
+# Install agent-starter-pack
+pip install agent-starter-pack
+
+# Setup CI/CD infrastructure (one-time setup)
+agent-starter-pack setup-cicd
+
+# Configure for Cloud Build or GitHub Actions
+# Follow the prompts to select:
+# - Deployment target: cloud_run
+# - CI/CD runner: google_cloud_build or github_actions
+```
+
+Once setup, deployments happen automatically:
+```bash
+# Make changes, commit, and push
+git add .
+git commit -m "Update agent"
+git push origin main
+# Automatic build and deploy!
+```
+
+**Features:**
+- ✓ Automatic deployment on git push
+- ✓ Terraform infrastructure as code
+- ✓ Cloud Build or GitHub Actions support
+- ✓ Production-ready CI/CD pipeline
+
+#### Option 3: Manual Deployment
+
+See [Manual Deployment Steps](#manual-deployment-steps) below for full control.
 
 ### Manual Deployment Steps
 
@@ -143,6 +208,25 @@ gcloud run services describe registration-agent \
 
 ---
 
+## Deployment Method Comparison
+
+| Feature | deploy.sh | CI/CD (agent-starter-pack) | Manual |
+|---------|-----------|---------------------------|--------|
+| **Ease of use** | ⭐⭐⭐ Easiest | ⭐⭐ Medium | ⭐ Complex |
+| **Setup time** | 2 minutes | 5 minutes (one-time) | 5-10 minutes |
+| **Configuration** | Environment vars | Terraform + prompts | Full manual |
+| **Docker required** | Yes | Yes (automatic) | Yes |
+| **Ongoing deployment** | Manual | Automatic on push | Manual |
+| **Customization** | Medium | High (Terraform) | Full control |
+| **Best for** | Quick/manual deploys | Production automation | Advanced users |
+
+**Recommendation:**
+- **Use deploy.sh** for quick manual deployments and testing
+- **Use CI/CD setup** for production with automated deployments on git push
+- **Use manual** only if integrating with existing infrastructure
+
+---
+
 ## Continuous Deployment with Cloud Build
 
 ### Setup
@@ -179,11 +263,24 @@ gcloud builds log BUILD_ID
 
 ### Local Development
 
-Create `.env` file (not committed to git):
+You can use environment variables to configure the agent without editing files.
+
+**Set inline:**
+```bash
+PORT=9000 HOST=0.0.0.0 SERVER_MODE=compliant python -m src.main --mode compliant
+```
+
+**Or create `.env` file** (not committed to git):
 ```bash
 PORT=8000
 HOST=0.0.0.0
 SERVER_MODE=compliant
+```
+
+Then load with:
+```bash
+# If using python-dotenv
+python -m src.main --mode compliant
 ```
 
 ### Cloud Run

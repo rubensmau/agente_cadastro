@@ -117,18 +117,66 @@ The server will start on `http://0.0.0.0:8000` (default) and display:
 - Health check: `/health`
 - Search endpoint: `/send_message`
 
+### Changing the Port
+
+You can change the port using any of these methods:
+
+**Option 1: Environment variable (recommended)**
+```bash
+PORT=9000 python -m src.main --mode compliant
+```
+
+**Option 2: Export environment variable**
+```bash
+export PORT=9000
+python -m src.main --mode compliant
+```
+
+**Option 3: Edit configuration file**
+
+Edit `config/fields_config.yaml`:
+```yaml
+server:
+  port: 9000  # Change from 8000
+```
+
+**Priority:** Environment variable `PORT` overrides the config file setting.
+
 ### Cloud Run Deployment
 
-Deploy to Google Cloud Run with one command:
-
+**Quick deployment:**
 ```bash
 export GCP_PROJECT_ID="your-project-id"
 ./deploy.sh
 ```
 
-See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed deployment instructions, monitoring, and troubleshooting
+**Automated CI/CD (production):**
+```bash
+pip install agent-starter-pack
+agent-starter-pack setup-cicd  # One-time setup
+# Then deployments happen automatically on git push
+```
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed deployment options, monitoring, and troubleshooting
 
 ## Usage
+
+### Quick Testing with Helper Script
+
+The easiest way to test your agent:
+
+```bash
+# Search by name
+python agent_helper.py --name João
+
+# Search by city and state
+python agent_helper.py --city "São Paulo" --state SP
+
+# Get agent metadata
+python agent_helper.py --metadata
+```
+
+See [TESTING.md](TESTING.md) for complete helper script documentation.
 
 ### Check Agent Metadata
 

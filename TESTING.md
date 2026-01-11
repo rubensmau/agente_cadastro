@@ -46,6 +46,29 @@ python -m src.main --mode compliant
 }
 ```
 
+### Changing the Port
+
+By default, the server runs on port 8000. To use a different port:
+
+**With environment variable:**
+```bash
+PORT=9000 python -m src.main --mode compliant
+```
+
+**Or export first:**
+```bash
+export PORT=9000
+python -m src.main --mode compliant
+```
+
+**Or edit `config/fields_config.yaml`:**
+```yaml
+server:
+  port: 9000
+```
+
+The `PORT` environment variable takes priority over the config file.
+
 ## Testing with curl
 
 ### Simple Mode
@@ -82,6 +105,91 @@ curl -X POST http://localhost:8000/send_message \
 curl -X POST http://localhost:8000/send_message \
   -H "Content-Type: application/json" \
   -d '{"message": {"role": "user", "parts": [{"text": "{\"city\": \"São Paulo\"}"}]}}'
+
+curl -X POST https://registration-agent-153799711060.us-central1.run.app/send_message \
+  -H "Content-Type: application/json" \
+  -d '{"message": {"role": "user", "parts": [{"text": "{\"name\": \"João\"}"}]}}'
+
+```
+
+## Testing with Python Helper Script
+
+### Quick Start with agent_helper.py
+
+The easiest way to interact with your agent is using the `agent_helper.py` script, which automatically handles A2A message format wrapping/unwrapping.
+
+**Basic usage:**
+
+```bash
+# Search by name
+python agent_helper.py --name João
+
+# Search by city
+python agent_helper.py --city "São Paulo"
+
+# Search by CPF (searchable but not exposed in results)
+python agent_helper.py --cpf "123.456.789-00"
+
+# Multi-field search
+python agent_helper.py --surname Silva --state SP
+
+# Get agent metadata (agent card)
+python agent_helper.py --metadata
+
+# Health check
+python agent_helper.py --health
+
+# Get raw JSON output
+python agent_helper.py --name João --json
+
+# Use custom URL/port
+python agent_helper.py --url http://localhost:9000 --name Maria
+```
+
+**Note:** If you changed the server port, use the `--url` parameter with your custom port.
+
+**Example output:**
+
+```
+✓ Found 1 matching record(s)
+
+Found 1 record(s):
+
+Record 1:
+  name: João
+  surname: Silva
+  city: São Paulo
+  state: SP
+  phone: (11) 98765-4321
+```
+
+### Using the Helper in Your Code
+
+You can also import the `AgentHelper` class in your Python scripts:
+
+```python
+import asyncio
+from agent_helper import AgentHelper
+
+async def main():
+    helper = AgentHelper("http://localhost:8000")
+
+    # Check health
+    health = await helper.health_check()
+    print(health)
+
+    # Get agent card
+    metadata = await helper.get_agent_card()
+    print(f"Agent: {metadata['name']}")
+
+    # Search
+    results = await helper.search(name="João", city="São Paulo")
+    print(f"Found {results['count']} records")
+    for record in results['results']:
+        print(record)
+
+if __name__ == "__main__":
+    asyncio.run(main())
 ```
 
 ## Testing with httpx (Python)

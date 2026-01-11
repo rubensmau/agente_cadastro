@@ -1,7 +1,8 @@
 # Core A2A and ADK frameworks
 google-adk>=0.1.0
-a2a-client>=0.1.0
-a2a-server>=0.1.0
+#a2a-client>=0.1.0
+#a2a-server>=0.1.0
+a2a-sdk >=0.3.22
 
 # Web framework
 starlette>=0.35.0

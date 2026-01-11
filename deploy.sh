@@ -13,7 +13,6 @@ NC='\033[0m' # No Color
 PROJECT_ID="${GCP_PROJECT_ID:-your-project-id}"
 REGION="${GCP_REGION:-us-central1}"
 SERVICE_NAME="registration-agent"
-IMAGE_NAME="gcr.io/${PROJECT_ID}/${SERVICE_NAME}"
 
 echo -e "${GREEN}========================================${NC}"
 echo -e "${GREEN}Registration Agent - Cloud Run Deployment${NC}"
@@ -36,6 +35,9 @@ fi
 # Set the GCP project
 echo -e "${YELLOW}Setting GCP project: ${PROJECT_ID}${NC}"
 gcloud config set project "${PROJECT_ID}"
+
+# Build image name AFTER getting the correct project ID
+IMAGE_NAME="gcr.io/${PROJECT_ID}/${SERVICE_NAME}"
 
 # Enable required APIs
 echo -e "\n${YELLOW}Enabling required GCP APIs...${NC}"

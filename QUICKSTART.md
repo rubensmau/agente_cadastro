@@ -16,6 +16,11 @@ pip install -r requirements.txt
 python -m src.main
 ```
 
+Default port is 8000. To use a different port:
+```bash
+PORT=9000 python -m src.main
+```
+
 ### 3. Test It
 Open browser: http://localhost:8000/
 
@@ -34,13 +39,14 @@ curl -X POST http://localhost:8000/send_message \
 
 ---
 
-## Cloud Run Deployment (5 Minutes)
+## Cloud Run Deployment (2 Minutes)
 
 ### Prerequisites
 - Google Cloud account with billing
 - gcloud CLI installed: https://cloud.google.com/sdk/docs/install
 
-### Deploy
+### Quick Deploy with Script
+
 ```bash
 # 1. Authenticate
 gcloud auth login
@@ -54,7 +60,7 @@ export GCP_PROJECT_ID="your-project-id"
 
 The script will:
 - ✓ Enable GCP APIs
-- ✓ Build Docker image
+- ✓ Build and push Docker image
 - ✓ Deploy to Cloud Run
 - ✓ Output your service URL
 
@@ -117,6 +123,12 @@ curl -X POST http://localhost:8000/send_message \
       "parts": [{"text": "{\"name\": \"João\"}"}]
     }
   }'
+
+curl -X POST https://registration-agent-153799711060.us-central1.run.app/send_message \
+  -H "Content-Type: application/json" \
+  -d '{"message": {"role": "user", "parts": [{"text": "{\"name\": \"João\"}"}]}}'
+
+
 ```
 
 ### View Agent Card
@@ -126,7 +138,7 @@ curl http://localhost:8000/metadata | jq
 
 ### Update Deployment
 ```bash
-# Make changes, then:
+# Make changes, then redeploy:
 ./deploy.sh
 ```
 
@@ -139,9 +151,14 @@ gcloud run services logs tail registration-agent --region=us-central1
 
 ## Troubleshooting
 
-**Port in use?**
+**Port already in use?**
 ```bash
-PORT=8001 python -m src.main
+# Use a different port
+PORT=9000 python -m src.main
+
+# Or find and kill the process using port 8000
+lsof -i :8000
+kill -9 <PID>
 ```
 
 **Import errors?**
