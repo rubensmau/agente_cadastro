@@ -14,7 +14,7 @@ import httpx
 class AgentHelper:
     """Helper for communicating with the A2A-compliant Registration Data Agent."""
 
-    def __init__(self, base_url: str = "http://localhost:8000"):
+    def __init__(self, base_url: str = "https://registration-agent-153799711060.us-central1.run.app/"):
         self.base_url = base_url
 
     async def get_agent_card(self):
@@ -108,7 +108,7 @@ Examples:
         """
     )
 
-    parser.add_argument("--url", default="http://localhost:8000",
+    parser.add_argument("--url", default="https://registration-agent-153799711060.us-central1.run.app/",
                         help="Agent base URL (default: http://localhost:8000)")
     parser.add_argument("--name", help="Search by name")
     parser.add_argument("--surname", help="Search by surname")
